@@ -40,9 +40,8 @@ jobs:
         run: python modelling.py
 
       - name: Read Best Model Run ID
-        working-directory: MLProject/artifacts
         run: |
-          RUN_ID=$(cat best_run_id.txt)
+          RUN_ID=$(cat MLProject/artifacts/best_run_id.txt)
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
           echo "Best Run ID: $RUN_ID"
 
@@ -59,13 +58,9 @@ jobs:
 
       - name: Build Docker Model
         if: env.RUN_ID != ''
-        env:
-          MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
-          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
-          MLFLOW_TRACKING_URI: ${{ env.MLFLOW_TRACKING_URI }}
         run: |
-          echo "Building Docker Image using RUN_ID=${{ env.RUN_ID }}"
-          mlflow models build-docker --model-uri "runs:/${{ env.RUN_ID }}/model" --name "breast-cancer-prediction"
+          echo "Building Docker Image using RUN_ID=$RUN_ID"
+          mlflow models build-docker --model-uri "runs:/$RUN_ID/model" --name "breast-cancer-prediction"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2

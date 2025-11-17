@@ -51,7 +51,7 @@ os.makedirs("artifacts", exist_ok=True)
 model_results = {}
 
 
-with mlflow.start_run(run_name="XGBoost_Baseline", nested=True) as xgb_run:
+with mlflow.start_run(run_name="XGBoost_Baseline") as xgb_run:
     mlflow.xgboost.autolog()
 
     xgb_model = XGBClassifier(
@@ -99,7 +99,7 @@ with mlflow.start_run(run_name="XGBoost_Baseline", nested=True) as xgb_run:
     }
 
 
-with mlflow.start_run(run_name="AdaBoost_Baseline", nested=True) as ada_run:
+with mlflow.start_run(run_name="AdaBoost_Baseline") as ada_run:
     mlflow.sklearn.autolog()
 
     ada_model = AdaBoostClassifier(
