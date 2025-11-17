@@ -31,6 +31,7 @@ def save_confusion_matrix(y_true, y_pred, labels, title, filename):
     return path
 
 
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 mlflow.set_experiment("BreastCancer_Experiment")
 
 df = pd.read_csv("processed_data.csv")
