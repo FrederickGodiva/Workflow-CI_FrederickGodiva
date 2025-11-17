@@ -1,0 +1,66 @@
+name: mlflow CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "MLProject/**"
+      - ".github/workflows/mlflow-ci.yml"
+  workflow_dispatch: {}
+
+env:
+  MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+  MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+  MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+
+jobs:
+  train-model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.7
+
+      - name: Setup PIP
+        run: python3 -m pip install --upgrade pip
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run MLFlow Project
+        working-directory: ./
+        run: |
+          mlflow run MLProject -e main --env-manager=local
+
+      - name: Get latest MLFlow Run Id
+        shell: bash
+        run: |
+          BEST_RUN_FILE="MLProject/artifacts/best_run_id.txt"
+
+          if [ -f "$BEST_RUN_FILE" ]; then
+            echo "Found best_run_id file at $BEST_RUN_FILE"
+            RUN_ID=$(cat "$BEST_RUN_FILE")
+          else
+            echo "best_run_id file not found. Cannot determine RUN_ID."
+            RUN_ID=""
+          fi
+
+          echo "Selected RUN_ID=$RUN_ID"
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+
+      - name: Install Python Dependencies
+        run: pip install docker
+
+      - name: Upload to Github
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-training-artifacts
+          path: |
+            artifacts
+            mlruns
+          if-no-files-found: ignore
